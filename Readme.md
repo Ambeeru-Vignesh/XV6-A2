@@ -50,14 +50,14 @@ int waitx(int, struct pstat *pstat);
 
 ### 3.2. Update `syscall.c` <a name="update-syscallc"></a>
 
-In the `syscall.c` file, add the following lines below the predefined externs, probably around line number 107:
+In the `syscall.c` file, add the following lines below the predefined externs:
 
 ```c
 extern int sys_ps(void);
 extern int sys_waitx(void);
 ```
 
-In the `syscall` array, probably around line number 130, add these lines:
+In the `syscall` array, add these lines:
 
 ```c
 [SYS_ps]      sys_ps,
@@ -215,7 +215,7 @@ int waitx(int pid, struct pstat *pstat);
 
 ### 3.9. Update `Makefile` <a name="update-makefile"></a>
 
-Edit the `Makefile` file and add the following lines in the user section, probably after `_zombie` (around line number 183):
+Edit the `Makefile` file and add the following lines in the user section:
 
 ```make
 _ps\
