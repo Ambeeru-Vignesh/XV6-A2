@@ -453,9 +453,9 @@ Create a new file named `ps.c` and add the following code:
 int
 main(int argc, char *argv[])
 {
-    ps(); // Call the 'ps' system call
-
-    exit();
+    // To call the ps system call
+    ps();
+    return 0;
 }
 ```
 
