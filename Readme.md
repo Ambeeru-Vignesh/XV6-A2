@@ -396,7 +396,7 @@ int main() {
   printf(1, "  End time: %d\n", pstat1.etime);
   printf(1, "  Total time: %d\n", pstat1.ttime);
 
-".
+
   c_pid_u = fork();
   if (c_pid_u < 0) {
    printf(1,"fork failed \n");
