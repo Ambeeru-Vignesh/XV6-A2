@@ -66,7 +66,7 @@ In the `syscall` array, add these lines:
 
 ### 3.3. Update `syscall.h` <a name="update-syscallh"></a>
 
-Edit the `syscall.h` file and add the following lines in the `syscall` section:
+Edit the `syscall.h` file and add the below code in the `syscall` section:
 
 ```c
 #define SYS_ps     22
@@ -127,25 +127,30 @@ int waitx(int pid, struct pstat *pstat) {
         continue;
       havekids = 1;
       if (p->pid == pid && p->state == ZOMBIE) {
-        // Found the specified process.
+        // parent is waiting for child to exit.
         if (pstat != 0) {
           pstat->ctime = p->ctime;
-          pstat->etime = p->etime;
-          pstat->ttime = p->etime - p->ctime; // Calculate total time
+          pstat->etime = p->etime;  //Filling up the process statistics structure
+          pstat->ttime = p->etime - p->ctime; // For Calculating total time
         }
         kfree(p->kstack);
         p->kstack = 0;
-        freevm(p->pgdir);
-        p->pid = 0;
+        freevm(p->pgdir); // Free the resources allocated
+        p->pid = 0;       // content between acquire and release is called critical section.
         p->parent = 0;
         p->name[0] = 0;
         p->killed = 0;
         p->state = UNUSED;
+
+        // ptable => process table that stores list of processes which are running.
+
         release(&ptable.lock);
         return pid;
       }
     }
     curproc->etime = ticks;
+
+    //ticks => Tracking process time
 
     if(!havekids || curproc->killed){
       release(&ptable.lock);
@@ -160,10 +165,11 @@ int ps(void)
 {
     struct proc *p;
 
+   // Interrupting the processor
     sti();
 
     acquire(&ptable.lock);
-
+    // printing the process statistics using ps command
     cprintf("PID \t| State \t| Name \t| Creation Time \t| End Time \t| Total Time |\n");
     for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
         if (p->state == UNUSED) {
@@ -361,62 +367,58 @@ int etime;
 int ttime;
 };
 int main() {
-  int child_pid_head, child_pid_uniq;
+  int c_pid_h, c_pid_u;
   struct pstat pstat1, pstat2;
 
-  // Fork a child process for "head -10 README".
-  child_pid_head = fork();
-  if (child_pid_head < 0) {
+  // To Fork a child process
+  c_pid_h = fork();
+  if (c_pid_h < 0) {
     printf(1,"fork failed\n");
     exit();
   }
 
-  if (child_pid_head == 0) {
-    // This is the child process for "head -10 README"
-    char *args[] = {"head", "-10", "README", 0};
+  if (c_pid_h == 0) {
+
+    char *args[] = {"head", "input.txt", 0};
     exec(args[0], args);
    printf(1,"exec head failed \n");
     exit();
   } else {
-    // This is the parent process
-    if (waitx(child_pid_head, &pstat1) < 0) {
+    // The below is for parent process
+    if (waitx(c_pid_h, &pstat1) < 0) {
       printf(1,"waitx failed \n");
       exit();
     }
   }
 
-  // Print process statistics for "head -10 README".
-  printf(1, "Process statistics for 'head -10 README':\n");
+  printf(1, "Process statistics for 'head input.txt':\n");
   printf(1, "  Creation time: %d\n", pstat1.ctime);
   printf(1, "  End time: %d\n", pstat1.etime);
   printf(1, "  Total time: %d\n", pstat1.ttime);
 
-
-  // Fork another child process for "uniq README
-
 ".
-  child_pid_uniq = fork();
-  if (child_pid_uniq < 0) {
+  c_pid_u = fork();
+  if (c_pid_u < 0) {
    printf(1,"fork failed \n");
     exit();
   }
 
-  if (child_pid_uniq == 0) {
-    // This is the child process for "uniq README"
-    char *args[] = {"uniq", "README", 0};
+  if (c_pid_u == 0) {
+
+    char *args[] = {"uniq", "example.txt", 0};
     exec(args[0], args);
     printf(1,"exec uniq failed\n");
     exit();
   } else {
     // This is the parent process
-    if (waitx(child_pid_uniq, &pstat2) < 0) {
+    if (waitx(c_pid_u, &pstat2) < 0) {
       printf(1,"waitx failed \n");
       exit();
     }
   }
 
-  // Print process statistics for "uniq README".
-  printf(1, "\nProcess statistics for 'uniq README':\n");
+  // Print process statistics for "uniq example.txt".
+  printf(1, "\nProcess statistics for 'uniq example.txt':\n");
   printf(1, "  Creation time: %d\n", pstat2.ctime);
   printf(1, "  End time: %d\n", pstat2.etime);
   printf(1, "  Total time: %d\n", pstat2.ttime);
@@ -466,7 +468,7 @@ main(int argc, char *argv[])
 3. Boot xv6 in a virtual machine or emulator (e.g., QEMU).
 
 4. You can now run the new utility programs from the xv6 shell. For example:
-   - `head -10 README` will display the first 10 lines of the `README` file.
+   - `head input.txt` will display the first 14 lines of the `input` file.
    - `uniq file.txt` will display unique lines from `file.txt`.
    - `test` will execute the test program, demonstrating the `ps` and `waitx` system calls.
 
