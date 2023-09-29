@@ -41,7 +41,7 @@ This project involves extending the xv6 operating system with two new system cal
 
 ### 3.1. Update `defs.h` <a name="update-defsh"></a>
 
-Edit the `defs.h` file and add the following lines in the `proc` section, likely around line number 124:
+Edit the `defs.h` file and add the following lines in the `proc` section:
 
 ```c
 int ps(void);
@@ -66,7 +66,7 @@ In the `syscall` array, add these lines:
 
 ### 3.3. Update `syscall.h` <a name="update-syscallh"></a>
 
-Edit the `syscall.h` file and add the following lines in the `syscall` section, likely around line number 23:
+Edit the `syscall.h` file and add the following lines in the `syscall` section:
 
 ```c
 #define SYS_ps     22
@@ -75,7 +75,7 @@ Edit the `syscall.h` file and add the following lines in the `syscall` section, 
 
 ### 3.4. Update `sysproc.c` <a name="update-sysprocc"></a>
 
-In the `sysproc.c` file, add the following code, likely around line number 92:
+In the `sysproc.c` file, add the following code:
 
 ```c
 int sys_waitx(void) {
@@ -106,19 +106,14 @@ int ctime, etime, ttime;
 In the `proc.c` file, add the following lines as instructed:
 
 ```c
-#include "pstat.h" // Add this line at the top of the file (around line 9)
+#include "pstat.h"
 
-// Add these two lines in the `allocproc` function, likely around line number 91
+
 p->ctime = ticks;
 p->etime = 0;
 
-// Add these lines in the `exit` function, likely just above `curproc->state = ZOMBIE;` (around line number 263)
 curproc->etime = ticks;
-
-// Add these lines in the `wait` function, just above the `if(!havekids || curproc->killed)` line (around line number 302)
 curproc->etime = ticks;
-
-// Add the `waitx` function just below the `wait` function
 
 int waitx(int pid, struct pstat *pstat) {
   struct proc *p;
@@ -152,29 +147,21 @@ int waitx(int pid, struct pstat *pstat) {
     }
     curproc->etime = ticks;
 
-    // No point waiting if we don't have any children.
     if(!havekids || curproc->killed){
       release(&ptable.lock);
       return -1;
     }
 
-    // Wait for children to exit. (See wakeup1 call in proc_exit.)
-    sleep(curproc, &ptable.lock); // DOC: wait-sleep
+    sleep(curproc, &ptable.lock);
   }
 }
-
-// Add the `ps` function at the end of the file
 
 int ps(void)
 {
     struct proc *p;
 
-    // Enable interrupts on this processor.
     sti();
 
-
-
- // Loop over the process table and display information for each process.
     acquire(&ptable.lock);
 
     cprintf("PID \t| State \t| Name \t| Creation Time \t| End Time \t| Total Time |\n");
@@ -182,7 +169,7 @@ int ps(void)
         if (p->state == UNUSED) {
             continue;
         }
-        p->etime = ticks; // Set end time when a process exits
+        p->etime = ticks;
 
         int ttime = p->etime - p->ctime;
         cprintf("%d \t| %s \t| %s \t| %d \t| %d \t| %d|\n",
@@ -191,7 +178,7 @@ int ps(void)
     }
     release(&ptable.lock);
 
-    return 0; // Return an appropriate value
+    return 0;
 }
 ```
 
