@@ -455,7 +455,7 @@ main(int argc, char *argv[])
 {
     // To call the ps system call
     ps();
-    return 0;
+    exit();
 }
 ```
 
